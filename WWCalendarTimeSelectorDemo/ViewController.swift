@@ -8,6 +8,16 @@
 
 import UIKit
 
+class DatePickerOptionConcrete: DatePickerOption {
+    let days: Int
+    let description: String
+    
+    init(days: Int, description: String) {
+        self.days = days
+        self.description = description
+    }
+}
+
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var dateLabel: UILabel!
@@ -109,8 +119,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             selector.optionSelectionType = WWCalendarTimeSelectorSelection.range
         case 16:
             // Example of using options picker
-            selector.pickerOptions = ["3 nights", "1 week (7 days)", "2 weeks (14 days)"]
-            selector.pickerSelectedOption = "1 week (7 days)"
+            
+            selector.pickerOptions = [DatePickerOptionConcrete(days: 3, description: "3 nights"),
+                                      DatePickerOptionConcrete(days: 7, description: "1 week (7 days)"),
+                                      DatePickerOptionConcrete(days: 14, description: "2 weeks (14 days)")]
+            selector.pickerSelectedOption = DatePickerOptionConcrete(days: 7, description: "1 week (7 days)")
             selector.optionPickerBackgroundColor = .brown
             selector.optionStyles.showDateMonth(true)
             selector.optionStyles.showMonth(false)
