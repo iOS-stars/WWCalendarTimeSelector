@@ -106,6 +106,8 @@ import UIKit
     case multiple
     /// Range Selection. Year and Time interface not available.
     case range
+    /// Single selection with range highliting depending on selecting option from picker view
+    case optionRange
 }
 
 /// Set `optionMultipleSelectionGrouping` with one of the following:
@@ -208,7 +210,7 @@ import UIKit
     ///     - selector: The selector that will be dismissed.
     ///     - dates: Selected dates.
     ///     - selectedOption: the picker selected option
-    @objc optional func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: String?)
+    @objc optional func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: DatePickerOption?)
 
     /// Method called before the selector is dismissed, and when user is Done with the selector.
     ///
@@ -221,7 +223,7 @@ import UIKit
     ///     - selector: The selector that will be dismissed.
     ///     - dates: Selected date.
     ///     - selectedOption: the picker selected option
-    @objc optional func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: String?)
+    @objc optional func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: DatePickerOption?)
     
     /// Method called before the selector is dismissed, and when user Cancel the selector.
     ///
@@ -234,7 +236,7 @@ import UIKit
     ///     - selector: The selector that will be dismissed.
     ///     - dates: Selected dates.
     ///     - selectedOption: the picker selected option
-    @objc optional func WWCalendarTimeSelectorCancel(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: String?)
+    @objc optional func WWCalendarTimeSelectorCancel(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: DatePickerOption?)
     
     /// Method called before the selector is dismissed, and when user Cancel the selector.
     ///
@@ -247,7 +249,7 @@ import UIKit
     ///     - selector: The selector that will be dismissed.
     ///     - dates: Selected date.
     ///     - selectedOption: the picker selected option
-    @objc optional func WWCalendarTimeSelectorCancel(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: String?)
+    @objc optional func WWCalendarTimeSelectorCancel(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: DatePickerOption?)
     
     /// Method called before the selector is dismissed.
     ///
@@ -415,13 +417,13 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
     /// The height ratio of the calendar row height to the content view height
     open var calendarRowHeightRatio: CGFloat = 0.1
     
-    open var pickerOptions: [String] = [] {
+    open var pickerOptions: [DatePickerOption] = [] {
         didSet {
             pickerSelectedOption = nil
         }
     }
     
-    open var pickerSelectedOption: String?
+    open var pickerSelectedOption: DatePickerOption?
     open var contentTitle: String?
     
     // Fonts & Colors
@@ -906,9 +908,12 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
     
         pickerView.dataSource = self
         pickerView.delegate = self
+        
         pickerView.reloadAllComponents()
-        if let selectedTitle = pickerSelectedOption, let selectedIndex = pickerOptions.index(of: selectedTitle) {
+        if let selectedOption = pickerSelectedOption,
+            let selectedIndex = pickerOptions.index(where: { $0.days == selectedOption.days }) {
             pickerView.selectRow(selectedIndex, inComponent: 0, animated: true)
+            WWCalendarRowDidSelect(optionCurrentDate)
         }
         
         // update content title
@@ -1090,6 +1095,9 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
         case .multiple:
             del?.WWCalendarTimeSelectorDone?(picker, dates: multipleDates, selectedOption: pickerSelectedOption)
         case .range:
+            del?.WWCalendarTimeSelectorDone?(picker, dates: optionCurrentDateRange.array, selectedOption: pickerSelectedOption)
+            
+        case .optionRange:
             del?.WWCalendarTimeSelectorDone?(picker, dates: optionCurrentDateRange.array, selectedOption: pickerSelectedOption)
         }
         dismiss()
@@ -1772,6 +1780,8 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
                         calRow.selectedDates = optionCurrentDates
                     case .range:
                         calRow.selectedDates = Set(optionCurrentDateRange.array)
+                    case .optionRange:
+                        calRow.selectedDates = Set(optionCurrentDateRange.array)
                     }
                     calRow.setNeedsDisplay()
                     if let fd = flashDate {
@@ -2088,6 +2098,18 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
                         shouldResetRange = true
                     }
                 }
+                updateDate()
+            case .optionRange:
+                let start = date.beginningOfDay
+                let end: Date = {
+                    if let pickerSelectedOption = pickerSelectedOption {
+                        return start + pickerSelectedOption.days.day
+                    }
+                    return start + 1.day
+                } ()
+                optionCurrentDateRange.setStartDate(start)
+                optionCurrentDateRange.setEndDate(end)
+                
                 updateDate()
             }
             calendarTable.reloadData()
@@ -2804,7 +2826,7 @@ extension WWCalendarTimeSelector: UIPickerViewDelegate {
         label.font = optionPickerFont
         label.textColor = optionPickerTextColor
         label.textAlignment = .center
-        label.text = pickerOptions[row]
+        label.text = pickerOptions[row].description
         
         // HACK: update the dividers colors everytime the picker is re-rendered
         updatePickerDividers()
@@ -2813,6 +2835,7 @@ extension WWCalendarTimeSelector: UIPickerViewDelegate {
     
     public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         pickerSelectedOption = pickerOptions[row]
+        WWCalendarRowDidSelect(optionCurrentDate)
     }
 }
 
@@ -2829,3 +2852,7 @@ extension WWCalendarTimeSelector: UIPickerViewDataSource {
     }
 }
 
+@objc public protocol DatePickerOption {
+    var days: Int { get }
+    var description: String { get }
+}

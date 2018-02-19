@@ -8,6 +8,16 @@
 
 import UIKit
 
+class DatePickerOptionConcrete: DatePickerOption {
+    let days: Int
+    let description: String
+    
+    init(days: Int, description: String) {
+        self.days = days
+        self.description = description
+    }
+}
+
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet weak var dateLabel: UILabel!
@@ -109,8 +119,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             selector.optionSelectionType = WWCalendarTimeSelectorSelection.range
         case 16:
             // Example of using options picker
-            selector.pickerOptions = ["3 nights", "1 week (7 days)", "2 weeks (14 days)"]
-            selector.pickerSelectedOption = "1 week (7 days)"
+            selector.optionSelectionType = .optionRange
+            selector.pickerOptions = [DatePickerOptionConcrete(days: 3, description: "3 nights"),
+                                      DatePickerOptionConcrete(days: 7, description: "1 week (7 days)"),
+                                      DatePickerOptionConcrete(days: 14, description: "2 weeks (14 days)")]
+            selector.pickerSelectedOption = DatePickerOptionConcrete(days: 7, description: "1 week (7 days)")
             selector.optionPickerBackgroundColor = .brown
             selector.optionStyles.showDateMonth(true)
             selector.optionStyles.showMonth(false)
@@ -152,16 +165,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
 extension ViewController: WWCalendarTimeSelectorProtocol {
     
-    func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: String?) {
+    func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, date: Date, selectedOption: DatePickerOption?) {
         print("Selected \n\(date)\n---")
-        print("Selected option \(selectedOption ?? "nil")")
+        print("Selected option \(selectedOption?.description ?? "nil")")
         singleDate = date
         dateLabel.text = date.stringFromFormat("d' 'MMMM' 'yyyy', 'h':'mma", locale: Locale.current)
     }
     
-    func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: String?) {
+    func WWCalendarTimeSelectorDone(_ selector: WWCalendarTimeSelector, dates: [Date], selectedOption: DatePickerOption?) {
         print("Selected Multiple Dates \n\(dates)\n---")
-        print("Selected option \(selectedOption ?? "nil")")
+        print("Selected option \(selectedOption?.description ?? "nil")")
         if let date = dates.first {
             singleDate = date
             dateLabel.text = date.stringFromFormat("d' 'MMMM' 'yyyy', 'h':'mma", locale: Locale.current)
