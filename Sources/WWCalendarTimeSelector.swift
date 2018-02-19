@@ -106,6 +106,8 @@ import UIKit
     case multiple
     /// Range Selection. Year and Time interface not available.
     case range
+    /// Single selection with range highliting depending on selecting option from picker view
+    case optionRange
 }
 
 /// Set `optionMultipleSelectionGrouping` with one of the following:
@@ -911,6 +913,7 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
         if let selectedOption = pickerSelectedOption,
             let selectedIndex = pickerOptions.index(where: { $0.days == selectedOption.days }) {
             pickerView.selectRow(selectedIndex, inComponent: 0, animated: true)
+            WWCalendarRowDidSelect(optionCurrentDate)
         }
         
         // update content title
@@ -1092,6 +1095,9 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
         case .multiple:
             del?.WWCalendarTimeSelectorDone?(picker, dates: multipleDates, selectedOption: pickerSelectedOption)
         case .range:
+            del?.WWCalendarTimeSelectorDone?(picker, dates: optionCurrentDateRange.array, selectedOption: pickerSelectedOption)
+            
+        case .optionRange:
             del?.WWCalendarTimeSelectorDone?(picker, dates: optionCurrentDateRange.array, selectedOption: pickerSelectedOption)
         }
         dismiss()
@@ -1774,6 +1780,8 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
                         calRow.selectedDates = optionCurrentDates
                     case .range:
                         calRow.selectedDates = Set(optionCurrentDateRange.array)
+                    case .optionRange:
+                        calRow.selectedDates = Set(optionCurrentDateRange.array)
                     }
                     calRow.setNeedsDisplay()
                     if let fd = flashDate {
@@ -2090,6 +2098,18 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
                         shouldResetRange = true
                     }
                 }
+                updateDate()
+            case .optionRange:
+                let start = date.beginningOfDay
+                let end: Date = {
+                    if let pickerSelectedOption = pickerSelectedOption {
+                        return start + pickerSelectedOption.days.day
+                    }
+                    return start + 1.day
+                } ()
+                optionCurrentDateRange.setStartDate(start)
+                optionCurrentDateRange.setEndDate(end)
+                
                 updateDate()
             }
             calendarTable.reloadData()
@@ -2815,6 +2835,7 @@ extension WWCalendarTimeSelector: UIPickerViewDelegate {
     
     public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         pickerSelectedOption = pickerOptions[row]
+        WWCalendarRowDidSelect(optionCurrentDate)
     }
 }
 
