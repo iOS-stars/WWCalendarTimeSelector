@@ -913,7 +913,7 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
         if let selectedOption = pickerSelectedOption,
             let selectedIndex = pickerOptions.index(where: { $0.days == selectedOption.days }) {
             pickerView.selectRow(selectedIndex, inComponent: 0, animated: true)
-            WWCalendarRowDidSelect(optionCurrentDate)
+            WWCalendarRowDidSelect(optionCurrentDateRange.start)
         }
         
         // update content title
@@ -2835,7 +2835,7 @@ extension WWCalendarTimeSelector: UIPickerViewDelegate {
     
     public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         pickerSelectedOption = pickerOptions[row]
-        WWCalendarRowDidSelect(optionCurrentDate)
+        WWCalendarRowDidSelect(optionCurrentDateRange.start)
     }
 }
 
