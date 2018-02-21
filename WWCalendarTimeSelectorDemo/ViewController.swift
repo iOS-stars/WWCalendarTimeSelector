@@ -135,6 +135,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             selector.contentSeparatorShadowHeight = 5.0
             selector.contentSeparatorShadowStartColor = UIColor.gray.withAlphaComponent(0.3)
             selector.contentSeparatorShadowEndColor = UIColor.clear
+            selector.optionCalendarBackgroundColorFutureDatesHighlight = UIColor.red.withAlphaComponent(1)
+            selector.optionCalendarBackgroundColorFutureDatesHighlightConnector = UIColor.red.withAlphaComponent(0.5)
+            selector.optionCalendarBackgroundColorTodayHighlight = UIColor.red.withAlphaComponent(1)
+            selector.optionCalendarBackgroundColorTodayHighlightConnector = UIColor.red.withAlphaComponent(0.5)
+            selector.optionMultipleSelectionGrouping = .pill
 
         default:
             break
