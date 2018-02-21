@@ -124,6 +124,8 @@ import UIKit
     case pill
     /// Individual circular selection with a bar between adjacent dates
     case linkedBalls
+    /// Two circles at the start and the end of the range with connecters between them
+    case dumbbell
 }
 
 /// Set `optionTimeStep` to customise the period of time which the users will be able to choose. The step will show the user the available minutes to select (with exception of `OneMinute` step, see *Note*).
@@ -441,14 +443,17 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
     open var optionCalendarFontColorToday = UIColor.brown
     open var optionCalendarFontColorTodayHighlight = UIColor.white
     open var optionCalendarBackgroundColorTodayHighlight = UIColor.brown
+    open var optionCalendarBackgroundColorTodayHighlightConnector = UIColor.brown
     open var optionCalendarBackgroundColorTodayFlash = UIColor.white
     open var optionCalendarFontColorPastDates = UIColor.darkGray
     open var optionCalendarFontColorPastDatesHighlight = UIColor.white
     open var optionCalendarBackgroundColorPastDatesHighlight = UIColor.brown
+    open var optionCalendarBackgroundColorPastDatesHighlightConnector = UIColor.brown
     open var optionCalendarBackgroundColorPastDatesFlash = UIColor.white
     open var optionCalendarFontColorFutureDates = UIColor.darkGray
     open var optionCalendarFontColorFutureDatesHighlight = UIColor.white
     open var optionCalendarBackgroundColorFutureDatesHighlight = UIColor.brown
+    open var optionCalendarBackgroundColorFutureDatesHighlightConnector = UIColor.brown
     open var optionCalendarBackgroundColorFutureDatesFlash = UIColor.white
     
     open var optionCalendarFontCurrentYear = UIFont.boldSystemFont(ofSize: 18)
@@ -1747,18 +1752,21 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
                 calRow.datePastFontColor = optionCalendarFontColorPastDates
                 calRow.datePastHighlightFontColor = optionCalendarFontColorPastDatesHighlight
                 calRow.datePastHighlightBackgroundColor = optionCalendarBackgroundColorPastDatesHighlight
+                calRow.datePastHighlightBackgroundConnectorColor = optionCalendarBackgroundColorPastDatesHighlightConnector
                 calRow.datePastFlashBackgroundColor = optionCalendarBackgroundColorPastDatesFlash
                 calRow.dateTodayFont = optionCalendarFontToday
                 calRow.dateTodayFontHighlight = optionCalendarFontTodayHighlight
                 calRow.dateTodayFontColor = optionCalendarFontColorToday
                 calRow.dateTodayHighlightFontColor = optionCalendarFontColorTodayHighlight
                 calRow.dateTodayHighlightBackgroundColor = optionCalendarBackgroundColorTodayHighlight
+                calRow.dateTodayHighlightBackgroundConnectorColor = optionCalendarBackgroundColorTodayHighlightConnector
                 calRow.dateTodayFlashBackgroundColor = optionCalendarBackgroundColorTodayFlash
                 calRow.dateFutureFont = optionCalendarFontFutureDates
                 calRow.dateFutureFontHighlight = optionCalendarFontFutureDatesHighlight
                 calRow.dateFutureFontColor = optionCalendarFontColorFutureDates
                 calRow.dateFutureHighlightFontColor = optionCalendarFontColorFutureDatesHighlight
                 calRow.dateFutureHighlightBackgroundColor = optionCalendarBackgroundColorFutureDatesHighlight
+                calRow.dateFutureHighlightBackgroundConnectorColor = optionCalendarBackgroundColorFutureDatesHighlightConnector
                 calRow.dateFutureFlashBackgroundColor = optionCalendarBackgroundColorFutureDatesFlash
                 calRow.flashDuration = selAnimationDuration
                 calRow.multipleSelectionGrouping = optionMultipleSelectionGrouping
@@ -2208,18 +2216,21 @@ internal class WWCalendarRow: UIView {
     internal var datePastFontColor: UIColor!
     internal var datePastHighlightFontColor: UIColor!
     internal var datePastHighlightBackgroundColor: UIColor!
+    internal var datePastHighlightBackgroundConnectorColor: UIColor!
     internal var datePastFlashBackgroundColor: UIColor!
     internal var dateTodayFont: UIFont!
     internal var dateTodayFontHighlight: UIFont!
     internal var dateTodayFontColor: UIColor!
     internal var dateTodayHighlightFontColor: UIColor!
     internal var dateTodayHighlightBackgroundColor: UIColor!
+    internal var dateTodayHighlightBackgroundConnectorColor: UIColor!
     internal var dateTodayFlashBackgroundColor: UIColor!
     internal var dateFutureFont: UIFont!
     internal var dateFutureFontHighlight: UIFont!
     internal var dateFutureFontColor: UIColor!
     internal var dateFutureHighlightFontColor: UIColor!
     internal var dateFutureHighlightBackgroundColor: UIColor!
+    internal var dateFutureHighlightBackgroundConnectorColor: UIColor!
     internal var dateFutureFlashBackgroundColor: UIColor!
     internal var flashDuration: TimeInterval!
     internal var multipleSelectionGrouping: WWCalendarTimeSelectorMultipleSelectionGrouping = .pill
@@ -2242,7 +2253,7 @@ internal class WWCalendarRow: UIView {
     fileprivate var comparisonDates: Set<Date> = []
     //fileprivate let days = ["S", "M", "T", "W", "T", "F", "S"]
     fileprivate let multipleSelectionBorder: CGFloat = 12
-    fileprivate let multipleSelectionBar: CGFloat = 8
+    fileprivate let multipleSelectionBar: CGFloat = 12
     fileprivate var firstAvailableDate: Date = Date().beginningOfDay
 
     internal override func draw(_ rect: CGRect) {
@@ -2251,7 +2262,7 @@ internal class WWCalendarRow: UIView {
         
         let ctx = UIGraphicsGetCurrentContext()
         let boxHeight = rect.height
-        let boxWidth = rect.width / 7
+        let boxWidth = round(rect.width / 7)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = NSTextAlignment.center
         
@@ -2284,24 +2295,27 @@ internal class WWCalendarRow: UIView {
                     var fontColor = dateFutureFontColor
                     var fontHighlightColor = dateFutureHighlightFontColor
                     var backgroundHighlightColor = dateFutureHighlightBackgroundColor.cgColor
+                    var backgroundConnectorHighlightColor = dateFutureHighlightBackgroundConnectorColor.cgColor
+
                     if date == today {
                         font = comparisonDates.contains(date) ? dateTodayFontHighlight : dateTodayFont
                         fontColor = dateTodayFontColor
                         fontHighlightColor = dateTodayHighlightFontColor
                         backgroundHighlightColor = dateTodayHighlightBackgroundColor.cgColor
+                        backgroundConnectorHighlightColor = dateTodayHighlightBackgroundConnectorColor.cgColor
                     }
                     else if date < firstAvailableDate {
                         font = comparisonDates.contains(date) ? datePastFontHighlight : datePastFont
                         fontColor = datePastFontColor
                         fontHighlightColor = datePastHighlightFontColor
                         backgroundHighlightColor = datePastHighlightBackgroundColor.cgColor
+                        backgroundConnectorHighlightColor = datePastHighlightBackgroundConnectorColor.cgColor
                     }
                     
                     let dateHeight = ceil(font!.lineHeight) as CGFloat
                     let y = (boxHeight - dateHeight) / 2
                     
                     if comparisonDates.contains(date) {
-                        ctx?.setFillColor(backgroundHighlightColor)
                         
                         var testStringSize = NSAttributedString(string: "00", attributes: [NSFontAttributeName: dateTodayFontHighlight, NSParagraphStyleAttributeName: paragraph]).size()
                         var dateMaxWidth = testStringSize.width
@@ -2327,29 +2341,50 @@ internal class WWCalendarRow: UIView {
                             // connector
                             switch multipleSelectionGrouping {
                             case .simple:
-                                break
+                                ctx?.setFillColor(backgroundHighlightColor)
+                                ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                             case .pill:
+                                ctx?.setFillColor(backgroundConnectorHighlightColor)
                                 if comparisonDates.contains(date - 1.day) {
-                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: y, width: boxWidth / 2 + 1, height: maxConnectorSize))
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: y, width: boxWidth / 2, height: maxConnectorSize))
                                 }
                                 if comparisonDates.contains(date + 1.day) {
-                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: y, width: boxWidth / 2 + 1, height: maxConnectorSize))
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: y, width: boxWidth / 2, height: maxConnectorSize))
+                                }
+                                ctx?.setFillColor(backgroundHighlightColor)
+                                if date == comparisonDates.sorted().first ||
+                                    date == comparisonDates.sorted().last {
+                                    ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                                 }
                             case .linkedBalls:
+                                ctx?.setFillColor(backgroundConnectorHighlightColor)
                                 if comparisonDates.contains(date - 1.day) {
-                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2 + 1, height: multipleSelectionBar))
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2, height: multipleSelectionBar))
                                 }
                                 if comparisonDates.contains(date + 1.day) {
-                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2 + 1, height: multipleSelectionBar))
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2, height: multipleSelectionBar))
+                                }
+                                ctx?.setFillColor(backgroundHighlightColor)
+                                ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
+                            case .dumbbell:
+                                ctx?.setFillColor(backgroundConnectorHighlightColor)
+                                if comparisonDates.contains(date - 1.day) {
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2, height: multipleSelectionBar))
+                                }
+                                if comparisonDates.contains(date + 1.day) {
+                                    ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2, height: multipleSelectionBar))
+                                }
+                                ctx?.setFillColor(backgroundHighlightColor)
+                                if date == comparisonDates.sorted().first ||
+                                    date == comparisonDates.sorted().last {
+                                    ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                                 }
                             }
-                            
-                            // ball
-                            ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                         }
                         else {
                             let x = CGFloat(i - 1) * boxWidth + (boxWidth - size) / 2
                             let y = (boxHeight - size) / 2
+                            ctx?.setFillColor(backgroundHighlightColor)
                             ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                         }
                         
