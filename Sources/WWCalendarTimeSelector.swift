@@ -2339,6 +2339,7 @@ internal class WWCalendarRow: UIView {
                             let y = (boxHeight - size) / 2
                             
                             // connector
+                            let sortedComparisonDates = comparisonDates.sorted()
                             switch multipleSelectionGrouping {
                             case .simple:
                                 ctx?.setFillColor(backgroundHighlightColor)
@@ -2348,12 +2349,12 @@ internal class WWCalendarRow: UIView {
                                 if comparisonDates.contains(date - 1.day) {
                                     ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth, y: y, width: boxWidth / 2, height: maxConnectorSize))
                                 }
-                                if comparisonDates.contains(date + 1.day) {
+                                if comparisonDates.contains(date + 1.day) ||
+                                    date == sortedComparisonDates.last {
                                     ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: y, width: boxWidth / 2, height: maxConnectorSize))
                                 }
                                 ctx?.setFillColor(backgroundHighlightColor)
-                                if date == comparisonDates.sorted().first ||
-                                    date == comparisonDates.sorted().last {
+                                if date == sortedComparisonDates.first {
                                     ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                                 }
                             case .linkedBalls:
@@ -2375,8 +2376,8 @@ internal class WWCalendarRow: UIView {
                                     ctx?.fill(CGRect(x: CGFloat(i - 1) * boxWidth + boxWidth / 2, y: (boxHeight - multipleSelectionBar) / 2, width: boxWidth / 2, height: multipleSelectionBar))
                                 }
                                 ctx?.setFillColor(backgroundHighlightColor)
-                                if date == comparisonDates.sorted().first ||
-                                    date == comparisonDates.sorted().last {
+                                if date == sortedComparisonDates.first ||
+                                    date == sortedComparisonDates.last {
                                     ctx?.fillEllipse(in: CGRect(x: x, y: y, width: size, height: size))
                                 }
                             }
