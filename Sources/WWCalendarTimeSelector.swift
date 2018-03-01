@@ -539,6 +539,14 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
     
     open var optionMainPanelBackgroundColor = UIColor.white
     
+    open var contentUpperSeparatorColor = UIColor.gray {
+        didSet {
+            if let contentUpperSeparatorView = contentUpperSeparatorView {
+                contentUpperSeparatorView.backgroundColor = contentUpperSeparatorColor
+            }
+        }
+    }
+    
     open var contentSeparatorColor = UIColor.gray {
         didSet {
             if let contentSeparatorView = contentSeparatorView {
@@ -692,6 +700,7 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
     @IBOutlet fileprivate weak var backgroundDayView: UIView!
     @IBOutlet fileprivate weak var backgroundSelView: UIView!
     @IBOutlet fileprivate weak var backgroundRangeView: UIView!
+    @IBOutlet fileprivate weak var contentUpperSeparatorView: UIView!
     @IBOutlet fileprivate weak var contentSeparatorView: UIView!
     @IBOutlet fileprivate weak var contentSeparatorShadowView: UIView!
     @IBOutlet fileprivate weak var backgroundContentView: UIView!
@@ -862,6 +871,7 @@ open class WWCalendarTimeSelector: UIViewController, UITableViewDelegate, UITabl
             cancelButton.isHidden = true
         }
         
+        contentUpperSeparatorView.backgroundColor = contentUpperSeparatorColor
         contentSeparatorView.backgroundColor = contentSeparatorColor
         contentSeparatorShadowHeightConstraint.constant = contentSeparatorShadowHeight
         view.layoutIfNeeded()
